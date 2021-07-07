@@ -5,11 +5,18 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct SubmitMetadata {
+	/// 投票人油箱
 	pub email: String,
+	/// 这是第几届投票（2021）
+	pub vote_id: i32,
+	/// 这是第几次提交该问卷
 	pub attempt: i32,
+	/// 提交时间
 	pub created_at: bson::DateTime,
-	pub user_ip: String, // 防刷票
-	pub additional_fingreprint: String
+	/// 用户IP
+	pub user_ip: String,
+	/// 额外用户指纹信息
+	pub additional_fingreprint: Option<String>
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -75,8 +82,10 @@ pub struct WorkSubmit {
 
 // 人物部分
 // {
-//   vote_id: 2020, 
-//   vote_token: 用户投票验证码,
+//   meta: {
+//	   vote_id: 2021,
+//     attempt: 1
+//   },
 //   charcaters:[{
 //     name: '',
 //     reason: '', // 理由
@@ -85,8 +94,10 @@ pub struct WorkSubmit {
 // }
 // CP部分
 // {
-//   vote_id: 2020, 
-//   vote_token:
+//   meta: {
+//	   vote_id: 2021,
+//     attempt: 1
+//   },
 //   cps:[{
 //     char1: '',
 //     char2: '',
@@ -97,8 +108,10 @@ pub struct WorkSubmit {
 // }
 // 音乐部分：
 // {
-//   vote_id: 2020, 
-//   vote_token:
+//   meta: {
+//	   vote_id: 2021,
+//     attempt: 1
+//   },
 //   musics:[{
 //     name: '',
 //     reason: '',
@@ -107,8 +120,10 @@ pub struct WorkSubmit {
 // }
 // 作品部分：
 // {
-//   vote_id: 2020, 
-//   vote_token:
+//   meta: {
+//	   vote_id: 2021,
+//     attempt: 1
+//   },
 //   works:[{
 //     name: '',
 //     reason: '',
@@ -117,8 +132,10 @@ pub struct WorkSubmit {
 // }
 // 问卷部分
 // {
-//   vote_id: 2020, 
-//   vote_token:
+//   meta: {
+//	   vote_id: 2021,
+//     attempt: 1
+//   },
 //   items:[{
 //     item: '' //问卷项代码
 //     answer: '' //回答内容
