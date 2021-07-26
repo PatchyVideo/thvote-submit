@@ -15,6 +15,10 @@ impl SubmitValidatorV1 {
         }
     }
     pub fn validate_character(&self, data: models::CharacterSubmitRest) -> Result<models::CharacterSubmitRest, ServiceError> {
+        // step 1: check date in range
+        // step 2: retrieve and check if user attempts are allowed
+        // step 3: check ranks are unique from 1 to 6
+        // step 4: check names are correct
         todo!()
     }
     pub fn validate_music(&self, data: models::MusicSubmitRest) -> Result<models::MusicSubmitRest, ServiceError> {

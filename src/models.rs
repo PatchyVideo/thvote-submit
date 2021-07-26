@@ -5,12 +5,12 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct SubmitMetadata {
-	/// 投票人油箱
+	/// 投票人邮箱
 	pub email: String,
-	/// 这是第几届投票（2021）
-	pub vote_id: i32,
-	/// 这是第几次提交该问卷
-	pub attempt: i32,
+	/// 这是第几届投票（2021）（由本程序生成，无需提交）
+	pub vote_id: Option<i32>,
+	/// 这是第几次提交该问卷（由本程序生成，无需提交）
+	pub attempt: Option<i32>,
 	/// 提交时间
 	pub created_at: bson::DateTime,
 	/// 用户IP
