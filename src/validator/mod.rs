@@ -63,6 +63,9 @@ impl SubmitValidatorV1 {
 			}
 			chset.insert(c.name.clone());
 		}
+		if rank_bitmask != 0b01111110u8 {
+			return Err(ServiceError::InvalidContent);
+		}
 		// step 4: check all names are correct
 		// step 5: return
 		Ok(data)
