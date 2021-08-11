@@ -1,7 +1,11 @@
 
+use std::fmt::format;
+
 use bson;
 use chrono::{DateTime, Utc};
 use serde::{Serialize, Deserialize};
+
+use crate::shared;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubmitMetadata {
@@ -17,6 +21,12 @@ pub struct SubmitMetadata {
 	pub user_ip: String,
 	/// 额外用户指纹信息
 	pub additional_fingreprint: Option<String>
+}
+
+impl SubmitMetadata {
+	pub fn to_vote_id(&self) -> String {
+		format!("{}-{}", shared::VOTE_YEAR, self.email)
+	}
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

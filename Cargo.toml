@@ -17,6 +17,7 @@ tokio = {version = "1.7.1", features = ["rt-multi-thread", "macros"]}
 futures-util = "0.3.15"
 colored = "2"
 thiserror = "1.0.26"
+redlock = {git = "https://github.com/zyddnys/redlock-rs.git"}
 
 [dependencies.mongodb]
 version = "1.2.0"

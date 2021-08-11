@@ -2,6 +2,7 @@
 use actix_web::{web, App, HttpServer};
 use mongodb::{options::ClientOptions, Client};
 
+mod comm;
 mod shared;
 mod models;
 mod handlers;
@@ -17,7 +18,8 @@ async fn main() -> std::io::Result<()> {
 
     // Start http server
     HttpServer::new(move || {
-        let submit_service_v1 = services::SubmitServiceV1::new(db.clone());
+        let redlock = redlock::RedLock::new(vec![comm::REDIS_ADDRESS]);
+        let submit_service_v1 = services::SubmitServiceV1::new(db.clone(), redlock);
         App::new()
             .data(submit_service_v1)
             .route("/v1/character/", web::post().to(handlers::submit_character_v1))

@@ -1,5 +1,6 @@
 use bson::{doc, Document, oid::ObjectId};
 use mongodb::{results::InsertOneResult, Collection, Database};
+use redlock::RedLock;
 
 use crate::models::{CPSubmitRest, CharacterSubmitRest, MusicSubmitRest, PaperSubmitRest, WorkSubmitRest};
 use crate::{models, validator};
@@ -12,18 +13,20 @@ pub struct SubmitServiceV1 {
     pub cp_coll: Collection<CPSubmitRest>,
     pub work_coll: Collection<WorkSubmitRest>,
     pub paper_coll: Collection<PaperSubmitRest>,
-    pub validator: validator::SubmitValidatorV1
+    pub validator: validator::SubmitValidatorV1,
+    pub lock: RedLock
 }
 
 impl SubmitServiceV1 {
-    pub fn new(db: Database) -> SubmitServiceV1 {
+    pub fn new(db: Database, lock: RedLock) -> SubmitServiceV1 {
         SubmitServiceV1 { 
             character_coll: db.collection_with_type::<CharacterSubmitRest>("raw_character"),
             music_coll: db.collection_with_type::<MusicSubmitRest>("raw_music"),
             cp_coll: db.collection_with_type::<CPSubmitRest>("raw_cp"),
             work_coll: db.collection_with_type::<WorkSubmitRest>("raw_work"),
             paper_coll: db.collection_with_type::<PaperSubmitRest>("raw_paper"),
-            validator: validator::SubmitValidatorV1::new()
+            validator: validator::SubmitValidatorV1::new(),
+            lock: lock
         }
     }
 

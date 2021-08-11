@@ -24,7 +24,6 @@ impl SubmitValidatorV1 {
 		// step 2: retrieve and check if user attempts are allowed
 
 		// first we lock submit for this email
-		// TODO: use redlock-rs
 		let query = doc! {
 			"meta.vote_id": crate::shared::VOTE_YEAR,
 			"meta.email": data.meta.email.clone()
