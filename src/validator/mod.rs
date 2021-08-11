@@ -33,15 +33,15 @@ impl SubmitValidatorV1 {
 			Ok(a) => a,
 			Err(_) => { return Err(ServiceError::Unknown); }
 		};
-		let mut max_attemp: u32 = 0;
+		let mut max_attempt: u32 = 0;
 		while let Some(obj) = found_attempts.try_next().await.unwrap() {
-			max_attemp = std::cmp::max(max_attemp, obj.meta.attempt.unwrap());
+			max_attempt = std::cmp::max(max_attempt, obj.meta.attempt.unwrap());
 		};
-		if max_attemp >= crate::shared::MAX_ATTEMPTS {
+		if max_attempt >= crate::shared::MAX_ATTEMPTS {
 			return Err(ServiceError::TooManyAttempts);
 		};
-		let current_attemp = max_attemp + 1;
-		data.meta.attempt = Some(current_attemp);
+		let current_attempt = max_attempt + 1;
+		data.meta.attempt = Some(current_attempt);
 		// step 3: check ranks are unique from 1 to 6 and only one 本命
 		let mut chset: HashSet<String> = HashSet::new();
 		let mut first_set = false;
