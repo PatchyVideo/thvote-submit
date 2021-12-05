@@ -7,12 +7,15 @@ use serde::{Serialize, Deserialize};
 
 use crate::shared;
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct VoteTokenClaim {
+	pub vote_id: Option<String>
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubmitMetadata {
-	/// 投票人邮箱
-	pub email: String,
-	/// 这是第几届投票（2021）（由本程序生成，无需提交）
-	pub vote_id: Option<u32>,
+	/// 投票人id
+	pub vote_id: String,
 	/// 这是第几次提交该问卷（由本程序生成，无需提交）
 	pub attempt: Option<u32>,
 	/// 提交时间
@@ -21,12 +24,6 @@ pub struct SubmitMetadata {
 	pub user_ip: String,
 	/// 额外用户指纹信息
 	pub additional_fingreprint: Option<String>
-}
-
-impl SubmitMetadata {
-	pub fn to_vote_id(&self) -> String {
-		format!("{}-{}", shared::VOTE_YEAR, self.email)
-	}
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -64,8 +61,7 @@ pub struct PaperSubmitRest {
 pub struct CharacterSubmit {
 	pub name: String,
 	pub reason: Option<String>,
-	pub first: Option<bool>,
-	pub rank: i32
+	pub first: Option<bool>
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -74,22 +70,20 @@ pub struct CPSubmit {
 	pub name_b: String,
 	pub name_c: Option<String>,
 	pub active: Option<String>,
-	pub reason: Option<String>,
-	pub rank: i32
+	pub reason: Option<String>
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MusicSubmit {
 	pub name: String,
 	pub reason: Option<String>,
-	pub rank: i32
+	pub first: Option<bool>
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WorkSubmit {
 	pub name: String,
-	pub reason: Option<String>,
-	pub rank: i32
+	pub reason: Option<String>
 }
 
 // 人物部分

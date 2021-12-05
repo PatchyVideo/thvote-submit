@@ -1,5 +1,5 @@
 [package]
-name = "thvote-submit"
+name = "thvote-submit-handler"
 version = "0.1.0"
 authors = ["zyddnys <zyddnys@outlook.com>"]
 edition = "2018"
@@ -18,6 +18,7 @@ futures-util = "0.3.15"
 colored = "2"
 thiserror = "1.0.26"
 redlock = {git = "https://github.com/zyddnys/redlock-rs.git"}
+jwt-simple = {git = "https://github.com/zyddnys/rust-jwt-simple.git"}
 
 [dependencies.mongodb]
 version = "1.2.0"

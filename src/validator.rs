@@ -20,13 +20,12 @@ impl SubmitValidatorV1 {
 		}
 	}
 	pub async fn validate_character(&self, mut data: models::CharacterSubmitRest, coll: &Collection<CharacterSubmitRest>) -> Result<models::CharacterSubmitRest, ServiceError> {
-		// step 1: check date in range
+
 		// step 2: retrieve and check if user attempts are allowed
 
-		// first we lock submit for this email
+		// first we lock submit for this vote_id
 		let query = doc! {
-			"meta.vote_id": crate::shared::VOTE_YEAR,
-			"meta.email": data.meta.email.clone()
+			"meta.vote_id": data.meta.vote_id.clone()
 		};
 		let mut found_attempts = match coll.find(query, None).await {
 			Ok(a) => a,
@@ -44,13 +43,7 @@ impl SubmitValidatorV1 {
 		// step 3: check ranks are unique from 1 to 6 and only one 本命
 		let mut chset: HashSet<String> = HashSet::new();
 		let mut first_set = false;
-		let mut rank_bitmask: u8 = 0;
 		for c in data.characters.iter() {
-			let rank = c.rank as usize;
-			if rank_bitmask & (1u8 << rank) != 0 {
-				return Err(ServiceError::InvalidContent);
-			};
-			rank_bitmask |= 1u8 << rank;
 			if c.first.unwrap_or_default() {
 				if first_set {
 					return Err(ServiceError::InvalidContent);
@@ -61,9 +54,6 @@ impl SubmitValidatorV1 {
 				return Err(ServiceError::InvalidContent);
 			}
 			chset.insert(c.name.clone());
-		}
-		if rank_bitmask != 0b01111110u8 {
-			return Err(ServiceError::InvalidContent);
 		}
 		// step 4: check all names are correct
 		// step 5: return

@@ -28,7 +28,7 @@ async fn main() -> std::io::Result<()> {
             .route("/v1/work/", web::post().to(handlers::submit_work_v1))
             .route("/v1/paper/", web::post().to(handlers::submit_paper_v1))
     })
-    .bind("0.0.0.0:8080")?
+    .bind("0.0.0.0:80")?
     .run()
     .await
 }

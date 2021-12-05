@@ -1,4 +1,5 @@
 use bson::{doc, Document, oid::ObjectId};
+use jwt_simple::prelude::ES256kPublicKey;
 use mongodb::{results::InsertOneResult, Collection, Database};
 use redlock::RedLock;
 

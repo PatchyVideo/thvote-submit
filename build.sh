@@ -1,5 +1,5 @@
 #!/bin/bash
-NAME=thvote-submit
+NAME=thvote-submit-handler
 export PKG_CONFIG_ALLOW_CROSS=1
 export OPENSSL_STATIC=true
 export OPENSSL_DIR=/musl

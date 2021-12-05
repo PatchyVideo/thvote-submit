@@ -20,16 +20,19 @@ pub struct ErrorResponse {
 pub enum ServiceError {
 	#[error("Invalid form content")]
 	InvalidContent,
+	#[error("Forbidden")]
+	Forbidden,
 	#[error("Too many attempts")]
 	TooManyAttempts,
 	#[error("Unknown Internal Error")]
-	Unknown
+	Unknown,
 }
 impl ServiceError {
 	pub fn name(&self) -> String {
 		match self {
 			Self::InvalidContent => "InvalidContent".to_string(),
 			Self::TooManyAttempts => "TooManyAttempts".to_string(),
+			Self::Forbidden => "Forbidden".to_string(),
 			Self::Unknown => "Unknown".to_string(),
 		}
 	}
@@ -39,6 +42,7 @@ impl ResponseError for ServiceError {
 		match *self {
 			Self::InvalidContent  => StatusCode::UNPROCESSABLE_ENTITY,
 			Self::TooManyAttempts => StatusCode::TOO_MANY_REQUESTS,
+			Self::Forbidden => StatusCode::FORBIDDEN,
 			Self::Unknown => StatusCode::INTERNAL_SERVER_ERROR,
 		}
 	}
