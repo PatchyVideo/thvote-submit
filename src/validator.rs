@@ -5,8 +5,9 @@ use actix_web::Error;
 use bson::doc;
 use futures_util::TryStreamExt;
 use mongodb::Collection;
+use pvrustlib::ServiceError;
 
-use crate::{models::{self, *}, shared::ServiceError};
+use crate::{models::{self, *}, common::SERVICE_NAME};
 
 #[derive(Debug, Clone)]
 pub struct SubmitValidatorV1 {
@@ -30,38 +31,27 @@ impl SubmitValidatorV1 {
 		};
 		let mut found_attempts = match coll.find(query, None).await {
 			Ok(a) => a,
-			Err(_) => { return Err(ServiceError::Unknown); }
+			Err(e) => { return Err(ServiceError::new(SERVICE_NAME, format!("{:?}", e))); }
 		};
-		let mut max_attempt: i32 = 0;
-		while let Some(obj) = found_attempts.try_next().await.unwrap() {
-			max_attempt = std::cmp::max(max_attempt, obj.meta.attempt.unwrap());
-			if max_attempt >= crate::shared::MAX_ATTEMPTS {
-				return Err(ServiceError::TooManyAttempts);
-			};
-		};
-		if max_attempt >= crate::shared::MAX_ATTEMPTS {
-			return Err(ServiceError::TooManyAttempts);
-		};
-		let current_attempt = max_attempt + 1;
-		data.meta.attempt = Some(current_attempt);
+		data.meta.attempt = Some(0);
 		// step 3: check ranks are unique from 1 to 6 and only one 本命
 		let mut chset: HashSet<String> = HashSet::new();
 		let mut first_set = false;
 		if data.characters.len() < 1 || data.characters.len() > 8 {
-			return Err(ServiceError::InvalidContent { reason: format!("数量{}不在范围内[1,8]", data.characters.len()) });
+			return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("数量{}不在范围内[1,8]", data.characters.len())));
 		}
 		for c in data.characters.iter() {
 			if c.reason.as_ref().map_or(0, |f| f.len()) > 512 {
-				return Err(ServiceError::InvalidContent { reason: "理由过长".into() });
+				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", "理由过长".into()));
 			}
 			if c.first.unwrap_or_default() {
 				if first_set {
-					return Err(ServiceError::InvalidContent { reason: "多个本命".into() });
+					return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", "多个本命".into()));
 				}
 				first_set = true;
 			}
 			if chset.contains(&c.name) {
-				return Err(ServiceError::InvalidContent { reason: format!("{}已存在", c.name) });
+				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("{}已存在", c.name)));
 			}
 			chset.insert(c.name.clone());
 		}
@@ -73,37 +63,25 @@ impl SubmitValidatorV1 {
 		let query = doc! {
 			"meta.vote_id": data.meta.vote_id.clone()
 		};
-		let mut found_attempts = match coll.find(query, None).await {
-			Ok(a) => a,
-			Err(_) => { return Err(ServiceError::Unknown); }
-		};
-		let mut max_attempt: i32 = 0;
-		while let Some(obj) = found_attempts.try_next().await.unwrap() {
-			max_attempt = std::cmp::max(max_attempt, obj.meta.attempt.unwrap());
-		};
-		if max_attempt >= crate::shared::MAX_ATTEMPTS {
-			return Err(ServiceError::TooManyAttempts);
-		};
-		let current_attempt = max_attempt + 1;
-		data.meta.attempt = Some(current_attempt);
+		data.meta.attempt = Some(0);
 		// step 3: check ranks are unique from 1 to 6 and only one 本命
 		let mut chset: HashSet<String> = HashSet::new();
 		let mut first_set = false;
 		if data.music.len() < 1 || data.music.len() > 12 {
-			return Err(ServiceError::InvalidContent { reason: format!("数量{}不在范围内[1,12]", data.music.len()) });
+			return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("数量{}不在范围内[1,12]", data.music.len())));
 		}
 		for c in data.music.iter() {
 			if c.reason.as_ref().map_or(0, |f| f.len()) > 512 {
-				return Err(ServiceError::InvalidContent { reason: "理由过长".into() });
+				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", "理由过长".into()));
 			}
 			if c.first.unwrap_or_default() {
 				if first_set {
-					return Err(ServiceError::InvalidContent { reason: "多个本命".into() });
+					return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", "多个本命".into()));
 				}
 				first_set = true;
 			}
 			if chset.contains(&c.name) {
-				return Err(ServiceError::InvalidContent { reason: format!("{}已存在", c.name) });
+				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("{}已存在", c.name)));
 			}
 			chset.insert(c.name.clone());
 		}
@@ -115,28 +93,16 @@ impl SubmitValidatorV1 {
 		let query = doc! {
 			"meta.vote_id": data.meta.vote_id.clone()
 		};
-		let mut found_attempts = match coll.find(query, None).await {
-			Ok(a) => a,
-			Err(_) => { return Err(ServiceError::Unknown); }
-		};
-		let mut max_attempt: i32 = 0;
-		while let Some(obj) = found_attempts.try_next().await.unwrap() {
-			max_attempt = std::cmp::max(max_attempt, obj.meta.attempt.unwrap());
-		};
-		if max_attempt >= crate::shared::MAX_ATTEMPTS {
-			return Err(ServiceError::TooManyAttempts);
-		};
-		let current_attempt = max_attempt + 1;
-		data.meta.attempt = Some(current_attempt);
+		data.meta.attempt = Some(0);
 		// step 3: check ranks are unique from 1 to 6 and only one 本命
 		let mut first_set = false;
 		if data.cps.len() < 1 || data.cps.len() > 4 {
-			return Err(ServiceError::InvalidContent { reason: format!("数量{}不在范围内[1,4]", data.cps.len()) });
+			return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("数量{}不在范围内[1,4]", data.cps.len())));
 		}
 		for c in data.cps.iter() {
 			if c.first.unwrap_or_default() {
 				if first_set {
-					return Err(ServiceError::InvalidContent { reason: "多个本命".into() });
+					return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", "多个本命".into()));
 				}
 				first_set = true;
 			}
@@ -148,15 +114,12 @@ impl SubmitValidatorV1 {
 						true
 					}
 				} {
-					return Err(ServiceError::InvalidContent { reason: format!("主动方{}不存在", active) });
+					return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("主动方{}不存在", active)));
 				}
 			}
 		}
 		// step 4: check all names are correct
 		// step 5: return
-		Ok(data)
-	}
-	pub async fn validate_work(&self, data: models::WorkSubmitRest, coll: &Collection<WorkSubmitRest>) -> Result<models::WorkSubmitRest, ServiceError> {
 		Ok(data)
 	}
 	pub async fn validate_paper(&self, data: models::PaperSubmitRest, coll: &Collection<PaperSubmitRest>) -> Result<models::PaperSubmitRest, ServiceError> {

@@ -1,11 +1,6 @@
 
-use std::fmt::format;
-
 use bson;
-use chrono::{DateTime, Utc};
 use serde::{Serialize, Deserialize};
-
-use crate::shared;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct VoteTokenClaim {

@@ -4,7 +4,7 @@ use mongodb::{options::ClientOptions, Client};
 use tokio::runtime::Handle;
 
 mod comm;
-mod shared;
+mod common;
 mod models;
 mod handlers;
 mod services;
@@ -14,7 +14,7 @@ mod paper_validator;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     //std::env::set_var("RUST_LOG", "actix_web=debug");
-    let client_options = ClientOptions::parse(shared::MONGODB_URL).await.unwrap();
+    let client_options = ClientOptions::parse(common::MONGODB_URL).await.unwrap();
     let client = Client::with_options(client_options).unwrap();
     let db = client.database("submits_v1");
 

@@ -1,13 +1,12 @@
-use bson::{doc, Document, oid::ObjectId};
-use futures_util::{TryFutureExt, TryStreamExt};
-use jwt_simple::prelude::ES256kPublicKey;
-use mongodb::Cursor;
-use mongodb::{results::InsertOneResult, Collection, Database};
+use bson::{doc, oid::ObjectId};
+use futures_util::{TryStreamExt};
+use mongodb::{Collection, Database};
+use pvrustlib::ServiceError;
 use redlock::RedLock;
 
 use crate::models::{CPSubmitRest, CharacterSubmitRest, MusicSubmitRest, PaperSubmitRest, WorkSubmitRest, VotingStatus};
 use crate::{models, validator};
-use crate::shared::ServiceError;
+use crate::common::{SERVICE_NAME};
 
 #[derive(Clone)]
 pub struct SubmitServiceV1 {
@@ -34,14 +33,10 @@ impl SubmitServiceV1 {
     }
 
     pub async fn submit_charcater(&self, verified_data: models::CharacterSubmitRest) -> Result<ObjectId, ServiceError> {
-        let mut attempts: u32 = 0;
-        while attempts < 3 {
-            match self.character_coll.insert_one(verified_data.clone(), None).await {
-                Ok(insert_result) => return Ok(insert_result.inserted_id.as_object_id().unwrap().clone()),
-                Err(_) => attempts += 1,
-            };
-        };
-        Err(ServiceError::Unknown)
+        match self.character_coll.insert_one(verified_data.clone(), None).await {
+            Ok(insert_result) => return Ok(insert_result.inserted_id.as_object_id().unwrap().clone()),
+            Err(e) => { return Err(ServiceError::new(SERVICE_NAME, format!("{:?}", e))); },
+        }
     }
 
     pub async fn get_submit_charcater(&self, vote_id: String) -> Result<CharacterSubmitRest, ServiceError> {
@@ -49,9 +44,9 @@ impl SubmitServiceV1 {
             doc!{"$match": {"meta.vote_id": vote_id}},
             doc!{"$sort": {"meta.created_at": -1}}
         ];
-        let mut cursor = self.character_coll.aggregate(stages, None).await.map_err(|f| ServiceError::Unknown)?;
-        let submit = cursor.try_next().await.map_err(|f| ServiceError::Unknown)?.ok_or(ServiceError::NotFound)?;
-        let mut submit: CharacterSubmitRest = bson::from_document(submit).map_err(|f| ServiceError::Unknown)?;
+        let mut cursor = self.character_coll.aggregate(stages, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+        let submit = cursor.try_next().await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?.ok_or(ServiceError::new_not_found(SERVICE_NAME, Some("submit_charcater".into())))?;
+        let mut submit: CharacterSubmitRest = bson::from_document(submit).map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
         submit.meta.additional_fingreprint = None;
         submit.meta.user_ip = "".to_string();
         submit.meta.vote_id = "".to_string();
@@ -59,14 +54,10 @@ impl SubmitServiceV1 {
     }
 
     pub async fn submit_music(&self, verified_data: models::MusicSubmitRest) -> Result<ObjectId, ServiceError> {
-        let mut attempts: u32 = 0;
-        while attempts < 3 {
-            match self.music_coll.insert_one(verified_data.clone(), None).await {
-                Ok(insert_result) => return Ok(insert_result.inserted_id.as_object_id().unwrap().clone()),
-                Err(_) => attempts += 1,
-            };
-        };
-        Err(ServiceError::Unknown)
+        match self.music_coll.insert_one(verified_data.clone(), None).await {
+            Ok(insert_result) => return Ok(insert_result.inserted_id.as_object_id().unwrap().clone()),
+            Err(e) => { return Err(ServiceError::new(SERVICE_NAME, format!("{:?}", e))); },
+        }
     }
 
     pub async fn get_submit_music(&self, vote_id: String) -> Result<MusicSubmitRest, ServiceError> {
@@ -74,9 +65,9 @@ impl SubmitServiceV1 {
             doc!{"$match": {"meta.vote_id": vote_id}},
             doc!{"$sort": {"meta.created_at": -1}}
         ];
-        let mut cursor = self.music_coll.aggregate(stages, None).await.map_err(|f| ServiceError::Unknown)?;
-        let submit = cursor.try_next().await.map_err(|f| ServiceError::Unknown)?.ok_or(ServiceError::NotFound)?;
-        let mut submit: MusicSubmitRest = bson::from_document(submit).map_err(|f| ServiceError::Unknown)?;
+        let mut cursor = self.music_coll.aggregate(stages, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+        let submit = cursor.try_next().await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?.ok_or(ServiceError::new_not_found(SERVICE_NAME, Some("submit_music".into())))?;
+        let mut submit: MusicSubmitRest = bson::from_document(submit).map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
         submit.meta.additional_fingreprint = None;
         submit.meta.user_ip = "".to_string();
         submit.meta.vote_id = "".to_string();
@@ -85,14 +76,10 @@ impl SubmitServiceV1 {
 
     
     pub async fn submit_cp(&self, verified_data: models::CPSubmitRest) -> Result<ObjectId, ServiceError> {
-        let mut attempts: u32 = 0;
-        while attempts < 3 {
-            match self.cp_coll.insert_one(verified_data.clone(), None).await {
-                Ok(insert_result) => return Ok(insert_result.inserted_id.as_object_id().unwrap().clone()),
-                Err(_) => attempts += 1,
-            };
-        };
-        Err(ServiceError::Unknown)
+        match self.cp_coll.insert_one(verified_data.clone(), None).await {
+            Ok(insert_result) => return Ok(insert_result.inserted_id.as_object_id().unwrap().clone()),
+            Err(e) => { return Err(ServiceError::new(SERVICE_NAME, format!("{:?}", e))); },
+        }
     }
 
     pub async fn get_submit_cp(&self, vote_id: String) -> Result<CPSubmitRest, ServiceError> {
@@ -100,35 +87,20 @@ impl SubmitServiceV1 {
             doc!{"$match": {"meta.vote_id": vote_id}},
             doc!{"$sort": {"meta.created_at": -1}}
         ];
-        let mut cursor = self.cp_coll.aggregate(stages, None).await.map_err(|f| ServiceError::Unknown)?;
-        let submit = cursor.try_next().await.map_err(|f| ServiceError::Unknown)?.ok_or(ServiceError::NotFound)?;
-        let mut submit: CPSubmitRest = bson::from_document(submit).map_err(|f| ServiceError::Unknown)?;
+        let mut cursor = self.cp_coll.aggregate(stages, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+        let submit = cursor.try_next().await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?.ok_or(ServiceError::new_not_found(SERVICE_NAME, Some("submit_cp".into())))?;
+        let mut submit: CPSubmitRest = bson::from_document(submit).map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
         submit.meta.additional_fingreprint = None;
         submit.meta.user_ip = "".to_string();
         submit.meta.vote_id = "".to_string();
         Ok(submit)
     }
 
-    pub async fn submit_work(&self, verified_data: models::WorkSubmitRest) -> Result<ObjectId, ServiceError> {
-        let mut attempts: u32 = 0;
-        while attempts < 3 {
-            match self.work_coll.insert_one(verified_data.clone(), None).await {
-                Ok(insert_result) => return Ok(insert_result.inserted_id.as_object_id().unwrap().clone()),
-                Err(_) => attempts += 1,
-            };
-        };
-        Err(ServiceError::Unknown)
-    }
-
     pub async fn submit_paper(&self, verified_data: models::PaperSubmitRest) -> Result<ObjectId, ServiceError> {
-        let mut attempts: u32 = 0;
-        while attempts < 3 {
-            match self.paper_coll.insert_one(verified_data.clone(), None).await {
-                Ok(insert_result) => return Ok(insert_result.inserted_id.as_object_id().unwrap().clone()),
-                Err(_) => attempts += 1,
-            };
-        };
-        Err(ServiceError::Unknown)
+        match self.paper_coll.insert_one(verified_data.clone(), None).await {
+            Ok(insert_result) => return Ok(insert_result.inserted_id.as_object_id().unwrap().clone()),
+            Err(e) => { return Err(ServiceError::new(SERVICE_NAME, format!("{:?}", e))); },
+        }
     }
 
     pub async fn get_submit_paper(&self, vote_id: String) -> Result<PaperSubmitRest, ServiceError> {
@@ -136,9 +108,9 @@ impl SubmitServiceV1 {
             doc!{"$match": {"meta.vote_id": vote_id}},
             doc!{"$sort": {"meta.created_at": -1}}
         ];
-        let mut cursor = self.paper_coll.aggregate(stages, None).await.map_err(|f| ServiceError::Unknown)?;
-        let submit = cursor.try_next().await.map_err(|f| ServiceError::Unknown)?.ok_or(ServiceError::NotFound)?;
-        let mut submit: PaperSubmitRest = bson::from_document(submit).map_err(|f| ServiceError::Unknown)?;
+        let mut cursor = self.paper_coll.aggregate(stages, None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+        let submit = cursor.try_next().await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?.ok_or(ServiceError::new_not_found(SERVICE_NAME, Some("submit_paper".into())))?;
+        let mut submit: PaperSubmitRest = bson::from_document(submit).map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
         submit.meta.additional_fingreprint = None;
         submit.meta.user_ip = "".to_string();
         submit.meta.vote_id = "".to_string();
@@ -152,20 +124,20 @@ impl SubmitServiceV1 {
         ];
         
         let ch = {
-            let mut cursor = self.character_coll.aggregate(stages.clone(), None).await.map_err(|f| ServiceError::Unknown)?;
-            cursor.try_next().await.map_err(|f| ServiceError::Unknown)?.is_some()
+            let mut cursor = self.character_coll.aggregate(stages.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+            cursor.try_next().await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?.is_some()
         };
         let music = {
-            let mut cursor = self.music_coll.aggregate(stages.clone(), None).await.map_err(|f| ServiceError::Unknown)?;
-            cursor.try_next().await.map_err(|f| ServiceError::Unknown)?.is_some()
+            let mut cursor = self.music_coll.aggregate(stages.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+            cursor.try_next().await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?.is_some()
         };
         let cp = {
-            let mut cursor = self.cp_coll.aggregate(stages.clone(), None).await.map_err(|f| ServiceError::Unknown)?;
-            cursor.try_next().await.map_err(|f| ServiceError::Unknown)?.is_some()
+            let mut cursor = self.cp_coll.aggregate(stages.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+            cursor.try_next().await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?.is_some()
         };
         let paper = {
-            let mut cursor = self.paper_coll.aggregate(stages.clone(), None).await.map_err(|f| ServiceError::Unknown)?;
-            cursor.try_next().await.map_err(|f| ServiceError::Unknown)?.is_some()
+            let mut cursor = self.paper_coll.aggregate(stages.clone(), None).await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+            cursor.try_next().await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?.is_some()
         };
         Ok(VotingStatus {
             characters: ch,
