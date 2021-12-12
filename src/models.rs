@@ -52,7 +52,7 @@ pub struct CPSubmitRest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PaperSubmitRest {
-	pub papers: serde_json::Map<String, serde_json::Value>,
+	pub papers_json: String,
 	pub meta: SubmitMetadata
 }
 
