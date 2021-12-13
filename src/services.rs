@@ -22,11 +22,11 @@ pub struct SubmitServiceV1 {
 impl SubmitServiceV1 {
     pub async fn new(db: Database, lock: RedLock) -> SubmitServiceV1 {
         SubmitServiceV1 { 
-            character_coll: db.collection_with_type::<CharacterSubmitRest>("raw_character"),
-            music_coll: db.collection_with_type::<MusicSubmitRest>("raw_music"),
-            cp_coll: db.collection_with_type::<CPSubmitRest>("raw_cp"),
-            work_coll: db.collection_with_type::<WorkSubmitRest>("raw_work"),
-            paper_coll: db.collection_with_type::<PaperSubmitRest>("raw_paper"),
+            character_coll: db.collection::<CharacterSubmitRest>("raw_character"),
+            music_coll: db.collection::<MusicSubmitRest>("raw_music"),
+            cp_coll: db.collection::<CPSubmitRest>("raw_cp"),
+            work_coll: db.collection::<WorkSubmitRest>("raw_work"),
+            paper_coll: db.collection::<PaperSubmitRest>("raw_paper"),
             validator: validator::SubmitValidatorV1::new().await,
             lock: lock
         }
