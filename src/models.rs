@@ -20,6 +20,17 @@ pub struct SubmitMetadata {
 	/// 额外用户指纹信息
 	pub additional_fingreprint: Option<String>
 }
+impl SubmitMetadata {
+	pub fn new() -> SubmitMetadata {
+		SubmitMetadata {
+			vote_id: "<unknown>".into(),
+			attempt: None,
+			created_at: bson::DateTime::now(),
+			user_ip: "<unknown>".into(),
+			additional_fingreprint: None
+		}
+	}
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CharacterSubmitRest {
