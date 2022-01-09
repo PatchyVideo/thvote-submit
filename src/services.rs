@@ -16,11 +16,12 @@ pub struct SubmitServiceV1 {
 	pub work_coll: Collection<WorkSubmitRest>,
 	pub paper_coll: Collection<PaperSubmitRest>,
 	pub validator: validator::SubmitValidatorV1,
-	pub lock: RedLock
+	pub lock: RedLock,
+	pub redis_client: redis::Client
 }
 
 impl SubmitServiceV1 {
-	pub async fn new(db: Database, lock: RedLock) -> SubmitServiceV1 {
+	pub async fn new(db: Database, redis: redis::Client, lock: RedLock) -> SubmitServiceV1 {
 		SubmitServiceV1 { 
 			character_coll: db.collection::<CharacterSubmitRest>("raw_character"),
 			music_coll: db.collection::<MusicSubmitRest>("raw_music"),
@@ -28,7 +29,8 @@ impl SubmitServiceV1 {
 			work_coll: db.collection::<WorkSubmitRest>("raw_work"),
 			paper_coll: db.collection::<PaperSubmitRest>("raw_paper"),
 			validator: validator::SubmitValidatorV1::new().await,
-			lock: lock
+			lock: lock,
+			redis_client: redis
 		}
 	}
 

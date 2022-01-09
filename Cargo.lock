@@ -678,7 +678,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2d47c1b11006b87e492b53b313bb699ce60e16613c4dddaa91f8f7c220ab2fa"
 dependencies = [
  "bytes",
+ "futures-util",
  "memchr",
+ "pin-project-lite",
+ "tokio",
 ]
 
 [[package]]
@@ -2212,12 +2215,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "redis"
+version = "0.21.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f23ceed4c0e76b322657c2c3352ea116f9ec60a1a1aefeb3c84ed062c50865b"
+dependencies = [
+ "async-trait",
+ "bytes",
+ "combine 4.6.0",
+ "dtoa",
+ "futures-util",
+ "itoa",
+ "percent-encoding",
+ "pin-project-lite",
+ "sha1",
+ "tokio",
+ "tokio-util",
+ "url",
+]
+
+[[package]]
 name = "redlock"
 version = "1.1.0"
 source = "git+https://github.com/zyddnys/redlock-rs.git#d2641697699edbeb5fee393a38391bc913463003"
 dependencies = [
  "rand 0.8.4",
- "redis",
+ "redis 0.20.2",
  "tokio",
 ]
 
@@ -2781,6 +2804,7 @@ dependencies = [
  "mongodb",
  "pvrustlib",
  "rand 0.8.4",
+ "redis 0.21.4",
  "redlock",
  "serde",
  "serde_json",

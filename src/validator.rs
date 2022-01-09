@@ -33,7 +33,6 @@ impl SubmitValidatorV1 {
 			Ok(a) => a,
 			Err(e) => { return Err(ServiceError::new(SERVICE_NAME, format!("{:?}", e))); }
 		};
-		data.meta.attempt = Some(0);
 		// step 3: check ranks are unique from 1 to 6 and only one 本命
 		let mut chset: HashSet<String> = HashSet::new();
 		let mut first_set = false;
@@ -41,7 +40,7 @@ impl SubmitValidatorV1 {
 			return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("数量{}不在范围内[1,8]", data.characters.len())));
 		}
 		for c in data.characters.iter() {
-			if c.reason.as_ref().map_or(0, |f| f.len()) > 512 {
+			if c.reason.as_ref().map_or(0, |f| f.len()) > 1000 {
 				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", "理由过长".into()));
 			}
 			if c.first.unwrap_or_default() {
@@ -63,7 +62,6 @@ impl SubmitValidatorV1 {
 		let query = doc! {
 			"meta.vote_id": data.meta.vote_id.clone()
 		};
-		data.meta.attempt = Some(0);
 		// step 3: check ranks are unique from 1 to 6 and only one 本命
 		let mut chset: HashSet<String> = HashSet::new();
 		let mut first_set = false;
@@ -71,7 +69,7 @@ impl SubmitValidatorV1 {
 			return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", format!("数量{}不在范围内[1,12]", data.music.len())));
 		}
 		for c in data.music.iter() {
-			if c.reason.as_ref().map_or(0, |f| f.len()) > 512 {
+			if c.reason.as_ref().map_or(0, |f| f.len()) > 1000 {
 				return Err(ServiceError::new_human_readable(SERVICE_NAME, "INVALID_CONTENT", "理由过长".into()));
 			}
 			if c.first.unwrap_or_default() {
@@ -93,7 +91,6 @@ impl SubmitValidatorV1 {
 		let query = doc! {
 			"meta.vote_id": data.meta.vote_id.clone()
 		};
-		data.meta.attempt = Some(0);
 		// step 3: check ranks are unique from 1 to 6 and only one 本命
 		let mut first_set = false;
 		if data.cps.len() < 1 || data.cps.len() > 4 {

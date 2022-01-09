@@ -2,18 +2,23 @@
 use actix_web::{web, HttpRequest};
 use pvrustlib::{EmptyJSON, ServiceError};
 
-use crate::models;
+use crate::{models, common::{rate_limit, SERVICE_NAME}};
 
 type SubmitServiceV1Wrapper = web::Data<crate::services::SubmitServiceV1>;
 
 pub async fn submit_character_v1(service: SubmitServiceV1Wrapper, body: actix_web::web::Json<models::CharacterSubmitRest>) -> Result<web::Json<EmptyJSON>, ServiceError> {
+	let mut conn = service.redis_client.get_async_connection().await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	rate_limit(&body.0.meta.vote_id, &mut conn).await?;
 	let lockid = format!("lock-submit_character_v1-{}", body.0.meta.vote_id);
+	let guard = service.lock.acquire_async(lockid.as_bytes(), 10 * 1000).await;
 	let sanitized = service.validator.validate_character(body.0, &service.character_coll).await?;
 	service.submit_charcater(sanitized).await?;
 	Ok(web::Json(EmptyJSON::new()))
 }
 
 pub async fn submit_music_v1(service: SubmitServiceV1Wrapper, body: actix_web::web::Json<models::MusicSubmitRest>) -> Result<web::Json<EmptyJSON>, ServiceError> {
+	let mut conn = service.redis_client.get_async_connection().await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	rate_limit(&body.0.meta.vote_id, &mut conn).await?;
 	let lockid = format!("lock-submit_music_v1-{}", body.0.meta.vote_id);
 	let guard = service.lock.acquire_async(lockid.as_bytes(), 10 * 1000).await;
 	let sanitized = service.validator.validate_music(body.0, &service.music_coll).await?;
@@ -22,6 +27,8 @@ pub async fn submit_music_v1(service: SubmitServiceV1Wrapper, body: actix_web::w
 }
 
 pub async fn submit_cp_v1(service: SubmitServiceV1Wrapper, body: actix_web::web::Json<models::CPSubmitRest>) -> Result<web::Json<EmptyJSON>, ServiceError> {
+	let mut conn = service.redis_client.get_async_connection().await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	rate_limit(&body.0.meta.vote_id, &mut conn).await?;
 	let lockid = format!("lock-submit_cp_v1-{}", body.0.meta.vote_id);
 	let guard = service.lock.acquire_async(lockid.as_bytes(), 10 * 1000).await;
 	let sanitized = service.validator.validate_cp(body.0, &service.cp_coll).await?;
@@ -30,6 +37,8 @@ pub async fn submit_cp_v1(service: SubmitServiceV1Wrapper, body: actix_web::web:
 }
 
 pub async fn submit_paper_v1(service: SubmitServiceV1Wrapper, body: actix_web::web::Json<models::PaperSubmitRest>) -> Result<web::Json<EmptyJSON>, ServiceError> {
+	let mut conn = service.redis_client.get_async_connection().await.map_err(|e| ServiceError::new(SERVICE_NAME, format!("{:?}", e)))?;
+	rate_limit(&body.0.meta.vote_id, &mut conn).await?;
 	let lockid = format!("lock-submit_paper_v1-{}", body.0.meta.vote_id);
 	let guard = service.lock.acquire_async(lockid.as_bytes(), 10 * 1000).await;
 	let sanitized = service.validator.validate_paper(body.0, &service.paper_coll).await?;
